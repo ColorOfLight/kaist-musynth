@@ -15,7 +15,7 @@ Program Synthesis via Code Resue and Code Manipulation for Python
 # OUTPUT: 7
 
 A = array_from_args()
-# HOLE: sort A
+# HOLE: sort /// A
 print(A[-1])
 ```
 
@@ -39,12 +39,22 @@ Get candidates from code pool
   - Developer check
     - Match input & output (percentage of passed cases)
 
+Parameters
+
+| Param Name       | Default          | 
+| ------------- |-------------| 
+| Runtime limit     | 500ms |
+| Iteration | 1000 |
+| Population size  | 50 |
+| Mutation Prob. | .5 (all) |
+> Mutation Probability is list of probabilities in order specified below
+
 #### Selection (can be changed)
 - lexicase selection
 - tournament selection
 
 #### Mutation
-- Rebind (change variable name)
+- Rebind (change variable name from )
 - Fix off-by-one (change constant name)
 - Replace variable with a constant
 - Delete statement

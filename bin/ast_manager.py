@@ -25,6 +25,36 @@ class switchNode(ast.NodeTransformer):
         return self.sw_n
     return node
 
+class addSuffixFuncdef(ast.NodeTransformer):
+  def __init__(self, suffix, funcs):
+    ast.NodeTransformer.__init__(self)
+    self.suffix = suffix
+    self.funcs = funcs
+
+  def visit_FunctionDef(self, node):
+    if (node.name in self.funcs):
+      node.name += self.suffix
+      for n in node.body:
+        addSuffixFuncdef(self.suffix, self.funcs).visit(n)
+    return node
+
+  def visit_Call(self, node):
+    if (node.func.id in self.funcs):
+      node.func.id += self.suffix
+    return node
+
+'''
+add_suffix_to_funcdef
+input: ast root node, string for suffix
+output: ast root node
+'''
+def add_suffix_to_funcdef(tree, suffix):
+  func_names = []
+  for node in ast.walk(tree):
+    if isinstance(node, ast.FunctionDef):
+      func_names.append(node.name)
+  return addSuffixFuncdef(suffix, func_names).visit(tree)
+
 '''
 Func for generating candidates
 input: code_direc

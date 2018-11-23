@@ -78,6 +78,9 @@ def generate_candidates(code_direc):
     # Parse code into ast tree
     tree = astor.code_to_ast.parse_file(os.path.join(code_direc, fn))
 
+    # Add suffix to func names
+    tree = add_suffix_to_funcdef(tree, f"_{name}")
+
     # Get func_names
     for node in ast.walk(tree):
       if isinstance(node, ast.FunctionDef):

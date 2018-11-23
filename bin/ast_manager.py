@@ -13,6 +13,18 @@ from read import get_fn_in_direc
 #     node.name = f"{node.name}_{self.fn}"
 #     return node
 
+class switchNode(ast.NodeTransformer):
+  def __init__(self, switch_node):
+    ast.NodeTransformer.__init__(self)
+    self.sw_n = switch_node
+
+  def visit_Assign(self, node):
+    if (len(node.targets) > 0):
+      first = node.targets[0]
+      if (isinstance(first, ast.Name) and first.id == '__HOLE__'):
+        return self.sw_n
+    return node
+
 '''
 Func for generating candidates
 input: code_direc
@@ -50,8 +62,9 @@ def generate_candidates(code_direc):
   return cands_dict, funcs_dict
 
 '''
-Add suffix to names of funcs
-input: string of code
-output: string of code
+Switch __HOLE__ with input node
+input: ast node, ast node with __HOLE__
+output: ast node (with input node instead of __HOLE__)
 '''
-# def add_suffix_to_funcs()
+def fill_hole(input_node, holed_node):
+  return switchNode(input_node).visit(holed_node)

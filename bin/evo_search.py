@@ -1,5 +1,21 @@
 import subprocess
 import sys
+
+class codeCand(Object):
+  def __init__(self, node, source):
+    self.node = node
+    self.source = source
+    self.score = None
+  
+  def set_score(self, score):
+    self.score = score
+
+  def get_score(self):
+    return self.score
+  
+  def get_source(self):
+    return self.source
+
 def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_list, hole_variable_list, hole_max_num,
@@ -11,7 +27,7 @@ def run_evo(
   max_score=0.0
   for i in range(max_iteration):
     #mutate
-    #seed_pool = mutation(seed_pool,mut_porb)
+    #seed_pool = mutation(seed_pool,mut_porb) - Tempo code.
     #seed_pool will be 150Gae
     max_score, seed_pool = lexicase_test([input_data, output_data], seed_pool, runtime_limit)
 
@@ -30,15 +46,15 @@ def run_evo(
 def seeding(candidate, func_list, popul_size):
   #make seed 
   #By Hoon
-  #used_cand_list is index list of be used for seeding pool in candidates
-  #len(used_cand_list) should be popul_size
+  #used_cand_list is index list of be used for seeding pool in candidates. Make for refill mutation.
+  #len(used_cand_list) should be same with popul_size
   return seed_pool, used_cand_list
 
 def lexicase_test(test_case, hole_tree, seed_list, runtime_limit)
   #by Suk
   test_num = len(test_case)
   for i in range(test_num):
-
+    break
 
   return max_score, seed_list
 

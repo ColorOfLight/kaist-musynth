@@ -17,9 +17,12 @@ class codeCand(object):
   def get_source(self):
     return self.source
 
+  def get_node(self):
+    return self.node
+
 def run_evo(
   hole_tree, input_data, output_data, 
-  cand_list, func_list, hole_variable_list, hole_max_num,
+  cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
   popul_size=100, mut_prob=[.5, .5, .5, .5, .5, .5]):
 #input_data and output_data are string. How about candidates and draft_code?

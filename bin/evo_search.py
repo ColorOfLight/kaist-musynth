@@ -1,4 +1,5 @@
 import subprocess
+import random
 import sys
 
 class codeCand(object):
@@ -26,7 +27,7 @@ def run_evo(
   popul_size=100, mut_prob=[.5, .5, .5, .5, .5, .5]):
 #input_data and output_data are string. How about candidates and draft_code?
 
-  seed_pool,used_cand_list = seeding(cand_list, func_dict, popul_size)
+  seed_pool, used_cand_list = seeding(cand_list, popul_size)
   max_score=0.0
   for i in range(max_iteration):
     #mutate
@@ -46,12 +47,18 @@ def run_evo(
     return None
   return synth_code'''
 
-def seeding(candidate, func_dict, popul_size):
-  #make seed 
-  #By Hoon
-  #used_cand_list is index list of be used for seeding pool in candidates. Make for refill mutation.
-  #len(used_cand_list) should be same with popul_size
+# Hoon
+# Input : candidate - list of codeCand, pop_size - size of population
+# Output : seed_pool - randomly seleted codeCand, used_cand_list - list of indices selected
+def seeding(candidates, pop_size):
+
+  used_cand_list = random.sample(range(len(candidates)), pop_size)
+  seed_pool = [candidates[i] for i in used_cand_list]
+
+  assert(len(used_cand_list) == pop_size)
+
   return seed_pool, used_cand_list
+
 
 def lexicase_test(test_case, hole_tree, seed_list, runtime_limit):
   #by Suk

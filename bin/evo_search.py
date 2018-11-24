@@ -16,18 +16,8 @@ def seeding(candidate, popul_size):
 
 def fitness(draft_code, runtime_limit, input_data, output_data):
 #draft_code should be code whose hole is fulled with candidate. Not AST!!
+  #score will be 0.0 ~ 1.0. If score is 1.0, it will ends. perfect!  
   
-  score = 0.0
-  #score will be 0~3. If score is 3, it will ends. perfect!
-
-  #sanity_check just run. If output successfully come out within 1second, pass sanity check.
-  #we should find the way to limit running time. maybe using process?
-  #do in hackaton.
-  if not_sanity_check_succeed:
-    return 0.0
-  else:
-    score += 1.0
-
   with f=open('test.py','w'):
     f.write(draft_code)
     f.close()
@@ -35,14 +25,20 @@ def fitness(draft_code, runtime_limit, input_data, output_data):
   test_num = len(input_data)
   test_score = 0.0
   for i in range(test_num):
-    start_time = time.time()
-    result = subprocess.check_output ('python test.py '+input_data[i] , shell=True).strip()
-     #result may have '\n' in end. so remove it. 
-    if time.time() - start_time < runtime_limit:
-      test_score += 1.0
+    try:
+      result = subprocess.check_output ('python test.py '+input_data[i] , 
+      shell=True, timeout=runtime_limit, stderr=STDERR,universal_newlines=True).strip()
+     #strip: result may have '\n' in end. so remove it. 
+    except subprocess.TimeoutExpired:
+      #Time limit error. Let's check next case.g
+      continue
+    except Exception:
+      #Rest errors. Number error, Runtime error, etc. Sanity check fail. score is 0.
+      return 0.0
     if result == output_data[i]:
       test_score += 1.0
-  
-  score += test_score / test_num
-  return score
+    else:
+      test_score += 0.5
+    #if output is right, plus 1/n point and if output  coume out but is wrong, plus 0.5/n point
+  return test_score / test_num
     

@@ -104,3 +104,7 @@ venv.bak/
 .mypy_cache/
 
 !.env
+
+# Ignore 
+*/test.py
+temp_test.py

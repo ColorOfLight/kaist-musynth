@@ -1,13 +1,13 @@
 import subprocess
 import sys
 def run_evo(
-  draft_code, input_data, output_data, candidates
+  hole_tree, input_data, output_data, input_data, output_data,
   runtime_limit=500, max_iteration=1000,
   popul_size=50, mut_prob=[.5, .5, .5, .5, .5, .5]):
 #input_data and output_data are string. How about candidates and draft_code?
-if not succeed:
-  return None
-return synth_code
+  if not succeed:
+    return None
+  return synth_code
 
 def seeding(candidate, popul_size):
   return seed_pool

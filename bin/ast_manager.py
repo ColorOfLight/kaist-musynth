@@ -39,7 +39,7 @@ class addSuffixFuncdef(ast.NodeTransformer):
     return node
 
   def visit_Call(self, node):
-    if (node.func.id in self.funcs):
+    if (not isinstance(node.func, ast.Attribute)) and (node.func.id in self.funcs):
       node.func.id += self.suffix
     return node
 

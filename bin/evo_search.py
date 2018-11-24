@@ -1,6 +1,5 @@
 import subprocess
-import time
-
+import sys
 def run_evo(
   draft_code, input_data, output_data, candidates
   runtime_limit=500, max_iteration=1000,
@@ -15,10 +14,18 @@ def seeding(candidate, popul_size):
 #make seed 
 
 def fitness(draft_code, runtime_limit, input_data, output_data):
+#input_data and output_data is string. just read from file.
+'''
+example of outputdata
+
+with open('output_1.txt') as f:
+	output_data=f.read()
+	f.close()
+'''
 #draft_code should be code whose hole is fulled with candidate. Not AST!!
   #score will be 0.0 ~ 1.0. If score is 1.0, it will ends. perfect!  
   
-  with f=open('test.py','w'):
+  with open('test.py','w') as f:
     f.write(draft_code)
     f.close()
 
@@ -26,8 +33,8 @@ def fitness(draft_code, runtime_limit, input_data, output_data):
   test_score = 0.0
   for i in range(test_num):
     try:
-      result = subprocess.check_output ('python test.py '+input_data[i] , 
-      shell=True, timeout=runtime_limit, stderr=STDERR,universal_newlines=True).strip()
+      result = subprocess.check_output ('python3 test.py', input=input_data[i] , 
+      shell=True, timeout=runtime_limit, stderr=sys.STDERR,universal_newlines=True).strip()
      #strip: result may have '\n' in end. so remove it. 
     except subprocess.TimeoutExpired:
       #Time limit error. Let's check next case.g

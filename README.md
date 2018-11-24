@@ -54,12 +54,18 @@ Parameters
 - tournament selection
 
 #### Mutation
-- Rebind (change variable name from )
-- Fix off-by-one (change constant name)
+> Let's say that the hole code is A, and the donated code snippet is B.
+
+- Rebind Variables
+  - Change the name of variable in B to the name in A.
+- Fix off-by-one
+  - Decrease the value of constant in B by one.
 - Replace variable with a constant
+  - Change the variable in B into new constant value.
 - Delete statement
-- Refill (which throws away the current contents of the hole and refills with new donor snippet)
-- insert new statement (insert a new donor statement at random within the hole)
+  - If B consists of more than one line, delete one line from B.
+- Insert new statement (insert a new donor statement at random within the hole)
+  - Insert a new line into B regarding surrounding context of B
 
 ## Reference
 

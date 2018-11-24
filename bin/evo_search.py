@@ -21,7 +21,7 @@ def run_evo(
       #return should be fixed later.
       return seed_pool[0]
     if i%10==0:
-      print(max_score)
+      print('%dth iteration. max_score is %d'%(i,max_score))
 
   '''if not succeed:
     return None

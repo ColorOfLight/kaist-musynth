@@ -16,14 +16,17 @@ class codeCand(object):
   def get_source(self):
     return self.source
 
+  def get_node(self):
+    return self.node
+
 def run_evo(
   hole_tree, input_data, output_data, 
-  cand_list, func_list, hole_variable_list, hole_max_num,
+  cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
   popul_size=100, mut_prob=[.5, .5, .5, .5, .5, .5]):
 #input_data and output_data are string. How about candidates and draft_code?
 
-  seed_pool,used_cand_list = seeding(cand_list, func_list, popul_size)
+  seed_pool,used_cand_list = seeding(cand_list, func_dict, popul_size)
   max_score=0.0
   for i in range(max_iteration):
     #mutate
@@ -43,7 +46,7 @@ def run_evo(
     return None
   return synth_code'''
 
-def seeding(candidate, func_list, popul_size):
+def seeding(candidate, func_dict, popul_size):
   #make seed 
   #By Hoon
   #used_cand_list is index list of be used for seeding pool in candidates. Make for refill mutation.

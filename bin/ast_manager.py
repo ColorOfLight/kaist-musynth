@@ -101,3 +101,41 @@ output: ast node (with input node instead of __HOLE__)
 '''
 def fill_hole(input_node, holed_node):
   return switchNode(input_node).visit(holed_node)
+
+'''
+get_name_list
+input: ast tree
+output: list of string
+'''
+def get_name_list(tree):
+  name_list = []
+  for node in ast.walk(tree):
+    if isinstance(node, ast.Assign):
+      for inner_node in node.targets:
+        if isinstance(inner_node, ast.Name):
+          name = inner_node.id
+          if name not in name_list and name != "__HOLE__":
+            name_list.append(name)
+    elif isinstance(node, ast.For):
+      name = node.target.id
+      if name not in name_list and name != "__HOLE__":
+        name_list.append(name)
+    elif isinstance(node, ast.FunctionDef):
+      for arg in node.args.args:
+        name = arg.arg
+        if name not in name_list and name != "__HOLE__":
+          name_list.append(name)
+  return name_list
+
+'''
+get_max_val
+input: ast tree
+output: integer
+'''
+def get_max_val(tree):
+  maximum = None
+  for node in ast.walk(tree):
+    if isinstance(node, ast.Num):
+      if maximum == None or maximum < node.n:
+        maximum = node.n
+  return maximum

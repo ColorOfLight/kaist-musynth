@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-class codeCand(Object):
+class codeCand(object):
   def __init__(self, node, source):
     self.node = node
     self.source = source
@@ -50,7 +50,7 @@ def seeding(candidate, func_list, popul_size):
   #len(used_cand_list) should be same with popul_size
   return seed_pool, used_cand_list
 
-def lexicase_test(test_case, hole_tree, seed_list, runtime_limit)
+def lexicase_test(test_case, hole_tree, seed_list, runtime_limit):
   #by Suk
   test_num = len(test_case)
   for i in range(test_num):
@@ -60,15 +60,15 @@ def lexicase_test(test_case, hole_tree, seed_list, runtime_limit)
 
 
 def fitness(draft_code, runtime_limit, input_data, output_data):
-#input_data and output_data is string. just read from file.
-'''
-example of outputdata
+  #input_data and output_data is string. just read from file.
+  '''
+  example of outputdata
 
-with open('output_1.txt') as f:
-	output_data=f.read()
-	f.close()
-'''
-#draft_code should be code whose hole is fulled with candidate. Not AST!!
+  with open('output_1.txt') as f:
+    output_data=f.read()
+    f.close()
+  '''
+  #draft_code should be code whose hole is fulled with candidate. Not AST!!
   #score will be 0.0 ~ 1.0. If score is 1.0, it will ends. perfect!  
   
   #save draft code as temp_test.py

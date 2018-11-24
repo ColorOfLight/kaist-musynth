@@ -30,12 +30,15 @@ def fitness(draft_code, runtime_limit, input_data, output_data):
       shell=True, timeout=runtime_limit, stderr=STDERR,universal_newlines=True).strip()
      #strip: result may have '\n' in end. so remove it. 
     except subprocess.TimeoutExpired:
-      #Time limit error. Let's check next case.
+      #Time limit error. Let's check next case.g
       continue
     except Exception:
       #Rest errors. Number error, Runtime error, etc. Sanity check fail. score is 0.
       return 0.0
     if result == output_data[i]:
       test_score += 1.0
+    else:
+      test_score += 0.5
+    #if output is right, plus 1/n point and if output  coume out but is wrong, plus 0.5/n point
   return test_score / test_num
     

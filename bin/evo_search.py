@@ -1,7 +1,8 @@
 import subprocess
 import sys
 def run_evo(
-  hole_tree, input_data, output_data, input_data, output_data,
+  hole_tree, input_data, output_data, 
+  cand_list, func_list, hole_variable_list, hole_max_num,
   runtime_limit=500, max_iteration=1000,
   popul_size=50, mut_prob=[.5, .5, .5, .5, .5, .5]):
 #input_data and output_data are string. How about candidates and draft_code?

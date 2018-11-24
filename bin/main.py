@@ -13,17 +13,20 @@ test_name = 'insertion-sort'
 
 # Get Input code 
 hole_tree = astor.code_to_ast.parse_file(os.path.join('../testcase', test_name + '.py'))
+hole_variable_list, hole_max_num = [], 0
 
 # Get dataset
 input_data, output_data = read_dataset(os.path.join('../testcase', test_name+'-dataset'))
 
 # Read hole and get Candidates
 # hole_comment: sort /// A
-cand_dict, func_dict = generate_candidates(os.path.join('../code-pool', test_name))
+cand_list, func_list = generate_candidates(os.path.join('../code-pool', test_name))
 
 '''
 # If it fails, return null
-synth_code = run_evo(hole_tree, input_data, output_data, input_data, output_data)
+synth_code = run_evo(
+  hole_tree, input_data, output_data, cand_list, func_list,
+  hole_variable_list, hole_max_num)
 
 if synth_code:
   # write_new_file

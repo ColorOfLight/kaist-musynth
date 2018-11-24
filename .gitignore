@@ -107,3 +107,4 @@ venv.bak/
 
 # Ignore 
 */test.py
+temp_test.py

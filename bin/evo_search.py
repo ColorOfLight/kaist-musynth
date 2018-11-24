@@ -25,7 +25,8 @@ with open('output_1.txt') as f:
 #draft_code should be code whose hole is fulled with candidate. Not AST!!
   #score will be 0.0 ~ 1.0. If score is 1.0, it will ends. perfect!  
   
-  with open('test.py','w') as f:
+  #save draft code as temp_test.py
+  with open('temp_test.py','w') as f:
     f.write(draft_code)
     f.close()
 
@@ -33,7 +34,8 @@ with open('output_1.txt') as f:
   test_score = 0.0
   for i in range(test_num):
     try:
-      result = subprocess.check_output ('python3 test.py', input=input_data[i] , 
+      #using python3 but with virtual env.
+      result = subprocess.check_output ('python temp_test.py', input=input_data[i] , 
       shell=True, timeout=runtime_limit, stderr=sys.STDERR,universal_newlines=True).strip()
      #strip: result may have '\n' in end. so remove it. 
     except subprocess.TimeoutExpired:

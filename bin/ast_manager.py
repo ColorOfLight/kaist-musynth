@@ -126,3 +126,16 @@ def get_name_list(tree):
         if name not in name_list and name != "__HOLE__":
           name_list.append(name)
   return name_list
+
+'''
+get_max_val
+input: ast tree
+output: integer
+'''
+def get_max_val(tree):
+  maximum = None
+  for node in ast.walk(tree):
+    if isinstance(node, ast.Num):
+      if maximum == None or maximum < node.n:
+        maximum = node.n
+  return maximum

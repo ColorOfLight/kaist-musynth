@@ -3,6 +3,7 @@ import ast
 import os
 from functools import reduce
 from read import get_fn_in_direc
+from evo_search import codeCand
 
 # class changeFuncNames(ast.NodeTransformer):
 #   def __init__(self, fn):
@@ -67,13 +68,11 @@ def generate_candidates(code_direc):
 
   # Declare variables
   fns = get_fn_in_direc(code_direc)
-  funcs_dict = {}
-  cands_dict = {}
+  func_list = []
+  cand_list = []
 
   for fn in fns:
     name = fn.split('.')[0]
-    funcs = []
-    cands = []
 
     # Parse code into ast tree
     tree = astor.code_to_ast.parse_file(os.path.join(code_direc, fn))
@@ -84,15 +83,12 @@ def generate_candidates(code_direc):
     # Get func_names
     for node in ast.walk(tree):
       if isinstance(node, ast.FunctionDef):
-        funcs.append(node)
+        func_list.append(node)
       elif reduce(lambda x, y: x or y,
                 list(map(lambda x: isinstance(node, x), CAND_NODES))):
-        cands.append(node)
-    
-    funcs_dict[name] = funcs
-    cands_dict[name] = cands
+        cand_list.append(codeCand(node, name))
 
-  return cands_dict, funcs_dict
+  return cand_list, func_list
 
 '''
 Switch __HOLE__ with input node

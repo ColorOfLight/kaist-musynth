@@ -1,5 +1,8 @@
 import ast
 import random
+from functools import reduce
+
+DELETE_TYPES = [ast.Module, ast.For, ast.While, ast.If]
 
 class changeName(ast.NodeTransformer):
   def __init__(self, input_name, change_num):
@@ -45,6 +48,25 @@ class changeNum(ast.NodeTransformer):
       self.name_num += 1
     return node
 
+class deleteOne(ast.NodeTransformer):
+  def __init__(self, change_num):
+    ast.NodeTransformer.__init__(self)
+    self.change_num = change_num
+    self.name_num = 0
+
+  def visit(self, node):
+    print(node)
+    if reduce(lambda x, y: x or y,
+              list(map(lambda x: isinstance(node, x), DELETE_TYPES))):
+      if (len(node.body) >= 2):
+        if (self.change_num == self.name_num):
+          choice = random.choice(node.body)
+          node.body.remove(choice)
+          self.name_num += 1
+        elif (self.change_num > self.name_num):
+          self.name_num += 1
+    return self.visit(node)
+
 def rebind_variable(cand, variable_list):
   cand_node = cand.get_node()
   
@@ -77,7 +99,15 @@ def replace_variable_with_constant(cand, max_const):
   return changeNum(max_const, change_num).visit(cand_node)
 
 def delete_statement(cand):
-  return
+  cand_node = cand.get_node()
+
+  node_num = _count_able_to_delete(cand_node, DELETE_TYPES)
+  if node_num <= 0:
+    return None
+
+  delete_num = random.randrange(0, node_num)
+  # TODO: fix deleteOne
+  return deleteOne(delete_num).visit(cand_node)
 
 def insert_new_statement(cand, cand_list):
   return
@@ -87,4 +117,13 @@ def _count_type_nodes(tree, ast_type):
   for node in ast.walk(tree):
     if isinstance(node, ast_type):
       node_num += 1
+  return node_num
+
+def _count_able_to_delete(tree, ast_types):
+  node_num = 0
+  for node in ast.walk(tree):
+    if reduce(lambda x, y: x or y,
+              list(map(lambda x: isinstance(node, x), ast_types))):
+      if (len(node.body) >= 2):
+        node_num += 1
   return node_num

@@ -11,7 +11,7 @@ def convert_type(input):
 
 def read_file(file_path):
   with open(file_path, 'r') as readfile:
-    lines = [convert_type(x.strip()) for x in readfile.readlines()]
+    lines = [x.strip() for x in readfile.readlines()]
     if (len(lines) <= 0):
       return None
     elif (len(lines) == 1):

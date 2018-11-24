@@ -3,17 +3,22 @@ import ast_manager
 import random
 import sys
 import astor
+from mutations import \
+  rebind_variable, fix_off_by_one, replace_variable_with_constant, delete_statement, insert_new_statement
 
 TEST_PATH = '../temp_test.py'
 
 class codeCand(object):
-  def __init__(self, node, source):
+  def __init__(self, node, source=None):
     self.node = node
     self.source = source
     self.score = None
   
   def set_score(self, score):
     self.score = score
+  
+  def set_node(self, node):
+    self.node = node
 
   def get_score(self):
     return self.score
@@ -48,6 +53,8 @@ def run_evo(
     if seed_pool[0].get_score()==1.0:
       #return should be fixed later.
       return seed_pool[0]
+    
+    seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num)
 
   '''if not succeed:
     return None
@@ -169,3 +176,33 @@ def fitness(draft_code, runtime_limit, input_data, output_data):
     #if output is right, plus 1/n point and if output  coume out but is wrong, plus 0.5/n point
   return test_score / test_num
     
+'''
+mutate_cand_list
+input: list of codeCand
+output: list of codeCand (mutated cands are added)
+'''
+def mutate_cand_list(cand_list, hole_variable_list, hole_max_num):
+  mutated_cand_list = []
+  index_list = list(range(5))
+  
+  for cand in cand_list:
+    random.shuffle(index_list)
+    for i in index_list:
+      if i == 0:
+        new_cand = rebind_variable(cand, hole_variable_list)
+      elif i == 1:
+        new_cand = fix_off_by_one(cand)
+      elif i == 2:
+        new_cand = replace_variable_with_constant(cand, hole_max_num)
+      elif i == 3:
+        new_cand = delete_statement(cand)
+      elif i == 4:
+        new_cand = insert_new_statement(cand, cand_list)
+      else:
+        new_cand = None
+      
+      if new_cand != None:
+        mutated_cand_list.append(new_cand)
+        break
+
+  return cand_list + mutated_cand_list

@@ -1,5 +1,6 @@
 import ast
 import random
+from copy import deepcopy
 from functools import reduce
 
 DELETE_TYPES = [ast.Module, ast.For, ast.While, ast.If]
@@ -76,7 +77,9 @@ def rebind_variable(cand, variable_list):
 
   input_name = random.sample(variable_list, 1)[0]
   change_num = random.randrange(0, name_num)
-  return changeName(input_name, change_num).visit(cand_node)
+  new_node = changeName(input_name, change_num).visit(cand_node)
+  return deepcopy(cand).set_node(new_node)
+
 
 def fix_off_by_one(cand):
   cand_node = cand.get_node()
@@ -86,8 +89,10 @@ def fix_off_by_one(cand):
     return None
 
   change_num = random.randrange(0, node_num)
-  return makeNumOff(change_num).visit(cand_node)
+  new_node = makeNumOff(change_num).visit(cand_node)
+  return deepcopy(cand).set_node(new_node)
 
+# TODO: fix...
 def replace_variable_with_constant(cand, max_const):
   cand_node = cand.get_node()
 
@@ -96,7 +101,8 @@ def replace_variable_with_constant(cand, max_const):
     return None
 
   change_num = random.randrange(0, node_num)
-  return changeNum(max_const, change_num).visit(cand_node)
+  new_node = changeNum(max_const, change_num).visit(cand_node)
+  return deepcopy(cand).set_node(new_node)
 
 def delete_statement(cand):
   cand_node = cand.get_node()
@@ -107,7 +113,8 @@ def delete_statement(cand):
 
   delete_num = random.randrange(0, node_num)
   # TODO: fix deleteOne
-  return deleteOne(delete_num).visit(cand_node)
+  # return deleteOne(delete_num).visit(cand_node)
+  return
 
 def insert_new_statement(cand, cand_list):
   return

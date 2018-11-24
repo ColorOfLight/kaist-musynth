@@ -21,12 +21,13 @@ input_data, output_data = read_dataset(os.path.join('../testcase', test_name+'-d
 
 # Read hole and get Candidates
 # hole_comment: sort /// A
-cand_list, func_list = generate_candidates(os.path.join('../code-pool', test_name))
+cand_list, func_dict = generate_candidates(os.path.join('../code-pool', test_name))
+
 
 '''
 # If it fails, return null
 synth_code = run_evo(
-  hole_tree, input_data, output_data, cand_list, func_list,
+  hole_tree, input_data, output_data, cand_list, func_dict,
   hole_variable_list, hole_max_num)
 
 if synth_code:

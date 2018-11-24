@@ -3,6 +3,7 @@ import ast
 import os
 from functools import reduce
 from read import get_fn_in_direc
+from evo_search import codeCand
 
 # class changeFuncNames(ast.NodeTransformer):
 #   def __init__(self, fn):
@@ -13,7 +14,7 @@ from read import get_fn_in_direc
 #     node.name = f"{node.name}_{self.fn}"
 #     return node
 
-class switchNode(ast.NodeTransformer):
+class fillHoleNode(ast.NodeTransformer):
   def __init__(self, switch_node):
     ast.NodeTransformer.__init__(self)
     self.sw_n = switch_node
@@ -67,13 +68,11 @@ def generate_candidates(code_direc):
 
   # Declare variables
   fns = get_fn_in_direc(code_direc)
-  funcs_dict = {}
-  cands_dict = {}
+  func_dict = {}
+  cand_list = []
 
   for fn in fns:
     name = fn.split('.')[0]
-    funcs = []
-    cands = []
 
     # Parse code into ast tree
     tree = astor.code_to_ast.parse_file(os.path.join(code_direc, fn))
@@ -84,23 +83,34 @@ def generate_candidates(code_direc):
     # Get func_names
     for node in ast.walk(tree):
       if isinstance(node, ast.FunctionDef):
-        funcs.append(node)
+        func_dict[node.name] = node
       elif reduce(lambda x, y: x or y,
                 list(map(lambda x: isinstance(node, x), CAND_NODES))):
-        cands.append(node)
-    
-    funcs_dict[name] = funcs
-    cands_dict[name] = cands
+        cand_list.append(codeCand(node, name))
 
-  return cands_dict, funcs_dict
+  return cand_list, func_dict
 
 '''
 Switch __HOLE__ with input node
-input: ast node, ast node with __HOLE__
-output: ast node (with input node instead of __HOLE__)
+input: codeCand, ast tree, list of ast nodes
+output: string of code
 '''
-def fill_hole(input_node, holed_node):
-  return switchNode(input_node).visit(holed_node)
+def fill_hole(cand, holed_node, func_dict):
+  cand_node = cand.get_node()
+  func_name_list = []
+  for node in ast.walk(cand_node):
+    if isinstance(node, ast.Call):
+      if isinstance(node.func, ast.Name) and (node.func.id in func_dict.keys()):
+        func_name_list.append(node.func.id)
+  
+  module_body = []
+  for func_name in list(set(func_name_list)):
+    module_body.append(func_dict[func_name])
+  module_body.append(cand_node)
+
+  input_node = ast.Module(body=module_body)
+  filled_node = fillHoleNode(input_node).visit(holed_node)
+  return astor.to_source(filled_node)
 
 '''
 get_name_list

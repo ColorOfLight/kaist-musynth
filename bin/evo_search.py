@@ -15,15 +15,32 @@ class codeCand(object):
     self.node = node
     self.source = source
     self.score = None
+    self.avg_score = 0.0
   
+  def init_score(self):
+    self.score = 0
+
   def set_score(self, score):
     self.score = score
-  
-  def set_node(self, node):
-    self.node = node
 
+  def add_score(self, score):
+    if self.score == None:
+      self.score = score
+    else:
+      self.score += score
+  
   def get_score(self):
     return self.score
+  
+  def set_avg_score(self, case_num):
+    if self.score != None:
+      self.avg_score = self.score/case_num
+
+  def get_avg_score(self):
+    return self.avg_score
+
+  def set_node(self, node):
+    self.node = node
   
   def get_source(self):
     return self.source
@@ -35,27 +52,26 @@ def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
-  popul_size=1000, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
+  popul_size=200, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
   # input_data and output_data are string. How about candidates and draft_code?
 
   logger = Logger('test')
 
-  seed_pool, used_cand_list = seeding(cand_list, popul_size)
+  seed_pool, _ = seeding(cand_list, popul_size)
   for i in range(max_iteration):
     #mutate
     seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
 
     #seed_pool will be 150Gae
-    seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit, logger)
+    seed_pool = lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runtime_limit, logger)
 
     #left popul_size candidates. 0score candidates should be sorted randomly.
     seed_pool = seed_pool[:popul_size]
 
-    if i % 1 == 0:
-      print('%dth iteration. max_score is %.2f' %
-            (i+1, seed_pool[0].get_score()))
+    print('%dth iteration. max_score is %.2f' %
+          (i+1, seed_pool[0].get_avg_score()))
 
-    if seed_pool[0].get_score()==1.0:
+    if seed_pool[0].get_avg_score()==1.0:
       #return should be fixed later.
       return seed_pool[0]
 
@@ -79,102 +95,62 @@ def seeding(candidates, pop_size):
 
   return seed_pool, used_cand_list
 
-def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, logger):
-  #by Suk
-  pool_size=len(seed_pool)
-  input_data, output_data = test_case
+
+def lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runtime_limit, logger):
+  pool_size = len(seed_pool)
   test_num = len(input_data)
 
-  None_scoring_list=[]
-  for i in range(pool_size):
-    if seed_pool[i].get_score()==None:
-      None_scoring_list.append(i)
-      seed_pool[i].set_score(0.0)
-  #If scoring_start_index is 0, all seeds should be scroing.
+  answer_found = False
+  for cand_code in seed_pool:
+    # If score is already calculated, skip this step.
+    if cand_code.get_score() != None:
+      continue
+    if answer_found:
+      break
 
-  for i in range(test_num):
-    scoring_end_list=[]
-    for j in None_scoring_list:
-      filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
+    filled_code=ast_manager.fill_hole(cand_code, hole_tree, func_dict)
+  
+    assert(len(input_data) == len(output_data))
+    case_num = len(input_data)
+
+    for i in range(case_num):
+      input_value = input_data[i]
+      output_value = output_data[i]
+
       with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
       try:
-        #using python3 but with virtual env.
-        result = subprocess.check_output(f'python {TEST_PATH}', input=input_data[i],
-          shell=True, timeout=runtime_limit, stderr=subprocess.STDOUT, universal_newlines=True).strip()
-        #Why strip?: result may have '\n' in end. so remove it. 
-        if result == output_data[i]:
-          seed_pool[j].set_score(seed_pool[j].get_score()+1.0)
+        # run code with python3 in virutalenv.
+        result = subprocess.check_output(f'python {TEST_PATH}', input=input_value,
+        shell=True, timeout=runtime_limit, stderr=subprocess.STDOUT, universal_newlines=True).strip()
+
+        if result == output_value:
+          cand_code.add_score(1.0)
         else:
-          seed_pool[j].set_score(seed_pool[j].get_score()+0.5)
-        if seed_pool[j].get_score()==test_num: #All test case pass.
-          seed_pool[j].set_score(1.0)
-          seed_pool[0]=seed_pool[j]
-          return seed_pool
+          cand_code.add_score(0.5)
+
+        # cand_code is the answer.
+        if cand_code.get_score() == test_num:
+          answer_found = True
+          break
+
+
       except Exception:
-        scoring_end_list.append(j)
-        None_scoring_list.remove(j)
-        #Time out, Runtime error, etc. Sanity check fail. scoring end.
+        # This step should be finished if sanity check failed. (e.g. runtime error, timeout, etc.)
+        if cand_code.get_score() == None:
+          cand_code.init_score()
+        break
 
-    # for j in scoring_end_list:
-    #   if i > 1:
-    #     seed_pool[j].set_score(seed_pool[j].get_score()/i)
+    cand_code.set_avg_score(case_num)
 
-  for i in None_scoring_list:
-    seed_pool[i].set_score(seed_pool[i].get_score()/test_num)
-    logger.log(astor.to_source(seed_pool[i].get_node()))
-    logger.log(seed_pool[i].get_score())
+    logger.log(astor.to_source(cand_code.get_node()))
+    logger.log(cand_code.get_avg_score())
+
+  sorted_pool = sorted(seed_pool, key=lambda x: x.avg_score, reverse=True)
+  return sorted_pool
+
   
-  #Scoring end. Sorting.
-  i=1
-  while i < pool_size:
-    tmp=seed_pool[i]
-    j=i-1
-    while seed_pool[j].get_score() < tmp.get_score() and j>-1:
-      seed_pool[j+1]=seed_pool[j]
-      j= j-1
-    seed_pool[j+1]=tmp
-    i=i+1
-  return seed_pool
 
-def fitness(draft_code, runtime_limit, input_data, output_data):
-  #input_data and output_data is string. just read from file.
-  '''
-  example of outputdata
-
-  with open('output_1.txt') as f:
-    output_data=f.read()
-    f.close()
-  '''
-  #draft_code should be code whose hole is fulled with candidate. Not AST!!
-  #score will be 0.0 ~ 1.0. If score is 1.0, it will ends. perfect!  
-  
-  #save draft code as temp_test.py
-  with open('temp_test.py','w') as f:
-    f.write(draft_code)
-    f.close()
-
-  test_num = len(input_data)
-  test_score = 0.0
-  for i in range(test_num):
-    try:
-      #using python3 but with virtual env.
-      result = subprocess.check_output ('python temp_test.py', input=input_data[i] , 
-      shell=True, timeout=runtime_limit, stderr=sys.STDERR,universal_newlines=True).strip()
-     #strip: result may have '\n' in end. so remove it. 
-    except subprocess.TimeoutExpired:
-      #Time limit error. Let's check next case.g
-      continue
-    except Exception:
-      #Rest errors. Number error, Runtime error, etc. Sanity check fail. score is 0.
-      return 0.0
-    if result == output_data[i]:
-      test_score += 1.0
-    else:
-      test_score += 0.5
-    #if output is right, plus 1/n point and if output  coume out but is wrong, plus 0.5/n point
-  return test_score / test_num
-    
 '''
 mutate_cand_list
 input: list of codeCand

@@ -23,8 +23,6 @@ input_data, output_data = read_dataset(os.path.join('../testcase', test_name+'-d
 # hole_comment: sort /// A
 cand_list, func_dict = generate_candidates(os.path.join('../code-pool', test_name))
 
-
-'''
 # If it fails, return null
 synth_code = run_evo(
   hole_tree, input_data, output_data, cand_list, func_dict,
@@ -33,4 +31,3 @@ synth_code = run_evo(
 if synth_code:
   # write_new_file
   print("Success")
-'''

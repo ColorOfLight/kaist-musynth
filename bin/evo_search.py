@@ -2,6 +2,9 @@ import subprocess
 import ast_manager
 import random
 import sys
+import astor
+
+TEST_PATH = '../temp_test.py'
 
 class codeCand(object):
   def __init__(self, node, source):
@@ -37,11 +40,14 @@ def run_evo(
 
     #left popul_size candidates. 0score candidates should be sorted randomly.
     seed_pool = seed_pool[:popul_size]
+
+    if i % 10 == 0:
+      print('%dth iteration. max_score is %.2f' %
+            (i+1, seed_pool[0].get_score()))
+
     if seed_pool[0].get_score()==1.0:
       #return should be fixed later.
       return seed_pool[0]
-    if i%10==0:
-      print('%dth iteration. max_score is %d'%(i,seed_pool[0].get_score()))
 
   '''if not succeed:
     return None
@@ -52,10 +58,14 @@ def run_evo(
 # Output : seed_pool - randomly seleted codeCand, used_cand_list - list of indices selected
 def seeding(candidates, pop_size):
 
-  used_cand_list = random.sample(range(len(candidates)), pop_size)
-  seed_pool = [candidates[i] for i in used_cand_list]
+  if len(candidates) >= pop_size:
+    used_cand_list = random.sample(range(len(candidates)), pop_size)
+    seed_pool = [candidates[i] for i in used_cand_list]
+  else:
+    used_cand_list = list(range(len(candidates)))
+    seed_pool = candidates
 
-  assert(len(used_cand_list) == pop_size)
+  # assert(len(used_cand_list) == pop_size)
 
   return seed_pool, used_cand_list
 
@@ -75,13 +85,12 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
   for i in range(test_num):
     scoring_end_list=[]
     for j in None_scoring_list:
-      filled_code=ast_manager.fill_hole(seed_pool[j],hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
-      with open('temp_test.py','w') as f:
+      filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
+      with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
-        f.close()
       try:
         #using python3 but with virtual env.
-        result = subprocess.check_output ('python temp_test.py', input=input_data[i], 
+        result = subprocess.check_output(f'python {TEST_PATH}', input=input_data[i],
         shell=True, timeout=runtime_limit, stderr=subprocess.STDERR, universal_newlines=True).strip()
         #Why strip?: result may have '\n' in end. so remove it. 
         if result == output_data[i]:

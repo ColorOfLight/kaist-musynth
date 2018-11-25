@@ -11,13 +11,7 @@ def convert_type(input):
 
 def read_file(file_path):
   with open(file_path, 'r') as readfile:
-    lines = [x.strip() for x in readfile.readlines()]
-    if (len(lines) <= 0):
-      return None
-    elif (len(lines) == 1):
-      return lines[0]
-    else:
-      return lines
+    return readfile.read()
 
 def get_fn_in_direc(direc):
   results = []

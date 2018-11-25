@@ -49,6 +49,22 @@ class changeNum(ast.NodeTransformer):
       self.name_num += 1
     return node
 
+class changeAssignValue(ast.NodeTransformer):
+  def __init__(self, insert_node, change_num):
+    ast.NodeTransformer.__init__(self)
+    self.insert_node = insert_node
+    self.change_num = change_num
+    self.name_num = 0
+
+  def visit_Assign(self, node):
+    if isinstance(node.value, ast.Name):
+      if (self.change_num == self.name_num):
+        node.value = self.insert_node
+        self.name_num += 1
+      elif (self.change_num > self.name_num):
+        self.name_num += 1
+    return node
+
 class deleteOne(ast.NodeTransformer):
   def __init__(self, change_num):
     ast.NodeTransformer.__init__(self)
@@ -69,7 +85,8 @@ class deleteOne(ast.NodeTransformer):
     return self.visit(node)
 
 def rebind_variable(cand, variable_list):
-  cand_node = cand.get_node()
+  new_cand = deepcopy(cand)
+  cand_node = new_cand.get_node()
   
   name_num = _count_type_nodes(cand_node, ast.Name)
   if name_num <= 0:
@@ -78,11 +95,13 @@ def rebind_variable(cand, variable_list):
   input_name = random.sample(variable_list, 1)[0]
   change_num = random.randrange(0, name_num)
   new_node = changeName(input_name, change_num).visit(cand_node)
-  return deepcopy(cand).set_node(new_node)
+  new_cand.set_node(new_node)
+  return new_cand
 
 
 def fix_off_by_one(cand):
-  cand_node = cand.get_node()
+  new_cand = deepcopy(cand)
+  cand_node = new_cand.get_node()
 
   node_num = _count_type_nodes(cand_node, ast.Num)
   if node_num <= 0:
@@ -90,20 +109,23 @@ def fix_off_by_one(cand):
 
   change_num = random.randrange(0, node_num)
   new_node = makeNumOff(change_num).visit(cand_node)
-  return deepcopy(cand).set_node(new_node)
+  new_cand.set_node(new_node)
+  return new_cand
 
-# TODO: fix...
 def replace_variable_with_constant(cand, max_const):
-  cand_node = cand.get_node()
+  new_cand = deepcopy(cand)
+  cand_node = new_cand.get_node()
 
-  node_num = _count_type_nodes(cand_node, ast.Num)
+  node_num = _count_able_to_constant(cand_node)
   if node_num <= 0:
     return None
 
   change_num = random.randrange(0, node_num)
-  new_node = changeNum(max_const, change_num).visit(cand_node)
-  return deepcopy(cand).set_node(new_node)
+  new_node = changeAssignValue(ast.Num(n=max_const), change_num).visit(cand_node)
+  new_cand.set_node(new_node)
+  return new_cand
 
+# TODO: develop later
 def delete_statement(cand):
   cand_node = cand.get_node()
 
@@ -116,6 +138,7 @@ def delete_statement(cand):
   # return deleteOne(delete_num).visit(cand_node)
   return
 
+# TODO: develop later
 def insert_new_statement(cand, cand_list):
   return
 
@@ -135,5 +158,13 @@ def _count_able_to_delete(tree, ast_types):
     if reduce(lambda x, y: x or y,
               list(map(lambda x: isinstance(node, x), ast_types))):
       if (len(node.body) >= 2):
+        node_num += 1
+  return node_num
+
+def _count_able_to_constant(tree):
+  node_num = 0
+  for node in ast.walk(tree):
+    if isinstance(node, ast.Assign):
+      if (isinstance(node.value, ast.Name)):
         node_num += 1
   return node_num

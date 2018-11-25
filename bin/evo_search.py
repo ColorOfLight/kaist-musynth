@@ -20,8 +20,14 @@ class codeCand(object):
   def init_score(self):
     self.score = 0
 
+  def set_score(self, score):
+    self.score = score
+
   def add_score(self, score):
-    self.score += score
+    if self.score == None:
+      self.score = score
+    else:
+      self.score += score
   
   def get_score(self):
     return self.score
@@ -29,6 +35,9 @@ class codeCand(object):
   def set_avg_score(self, case_num):
     if self.score != None:
       self.avg_score = self.score/case_num
+
+  def get_avg_score(self):
+    return self.avg_score
 
   def set_node(self, node):
     self.node = node
@@ -43,7 +52,7 @@ def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
-  popul_size=1000, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
+  popul_size=200, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
   # input_data and output_data are string. How about candidates and draft_code?
 
   logger = Logger('test')
@@ -59,11 +68,10 @@ def run_evo(
     #left popul_size candidates. 0score candidates should be sorted randomly.
     seed_pool = seed_pool[:popul_size]
 
-    if i % 1 == 0:
-      print('%dth iteration. max_score is %.2f' %
-            (i+1, seed_pool[0].get_score()))
+    print('%dth iteration. max_score is %.2f' %
+          (i+1, seed_pool[0].get_avg_score()))
 
-    if seed_pool[0].get_score()==1.0:
+    if seed_pool[0].get_avg_score()==1.0:
       #return should be fixed later.
       return seed_pool[0]
 
@@ -100,7 +108,7 @@ def lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runt
     if answer_found:
       break
 
-    filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)
+    filled_code=ast_manager.fill_hole(cand_code, hole_tree, func_dict)
   
     assert(len(input_data) == len(output_data))
     case_num = len(input_data)
@@ -134,7 +142,9 @@ def lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runt
         break
 
     cand_code.set_avg_score(case_num)
-      
+
+    logger.log(astor.to_source(cand_code.get_node()))
+    logger.log(cand_code.get_avg_score())
 
   sorted_pool = sorted(seed_pool, key=lambda x: x.avg_score, reverse=True)
   return sorted_pool

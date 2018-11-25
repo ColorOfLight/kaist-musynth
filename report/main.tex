@@ -1,9 +1,8 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 
-\title{Group 7 Report: KaiSynth}
-\author{Donghoon Han, Seokhyun Nam, Seongho Park, Tae Soo Kim}
-\date{December 2018}
+\title{\textsc{KaiSynth}: Program Synthesis via Code Reuse and Manipulation}
+\author{Donghoon Han, Seokhyun Nam, Seongho Park, Tae Soo Kim\\Group 7}
 
 \usepackage{natbib}
 \usepackage{graphicx}
@@ -13,13 +12,36 @@
 \maketitle
 
 \section{Introduction}
-MuSynth \citep{musynth}
+The advent of the Internet has facilitated the sharing of and the exploration of information. An immeasurable amount of knowledge is available at one's fingertips. The field of software development has flourished thanks to this. Individuals can easily make their programs or pieces of code available to others who can then exploit the easily accessible code to improve their own programs or accelerate their development process.
 
-\section{Methodology}
+However, although the accessibility of what has been nicknamed as "Big Code" can assist developers, efficiently harnessing this vast pool of code can be a difficult task. Developers cannot simply copy and paste any code fragment found online into their own program. A suitable fragment must first be found then it has to be manually altered to fit into the program's context. Depending on the program's and fragment's complexity, this can be a time-consuming and tedious task for the developer. Despite it being tedious, this practice of code reuse is common among software developers 
+
+In this paper, we propose and describe our system \textsc{KaiSynth} that can automatically synthesize programs by "filling" holes in a given program by utilizing and manipulating code fragments from other programs. Based on the system \textsc{MuSynth} \citep{musynth}, our approach uses a genetic algorithm that takes, as input, a draft program with an explicitly demarcated gap in the code. Such a gap could be present due to the developer's inability to code a functionality owed to their lack of expertise or time. \textsc{KaiSynth} generates a functional complete program by "filling" the hole with code fragments, extracted from a pool of similar programs, that have been slightly modified throughout evolutionary cycles. 
+
+We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms by users on the website HackerRank. Results from the evaluation demonstrated that [description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
+
+\section{Background}
+MuSynth \citep{musynth} and SourceForager
+Our task what we wanted to do
+Paper very limited as to their specifications about how they implemented
+Wanted to task ourselves if we could build the system from scrap using only the minimal guidelines or information provided in the paper.
+Could not handle the SourceForager part. Separate project related to SE but not to SB.
+
+ASTs
+
+
+\section{KaiSynth Overview}
+How we did it
 
 \section{Evaluation}
+Our evaluation and comparison to random search.
+
+\section{Limitations}
+Limitations of the system we built. Mostly due to python.
+Integers 
 
 \section{Conclusion}
+Our experience overall from this.
 
 \bibliographystyle{plain}
 \bibliography{references}

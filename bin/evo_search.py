@@ -3,8 +3,10 @@ import ast_manager
 import random
 import sys
 import astor
+import ast
 from mutations import \
   rebind_variable, fix_off_by_one, replace_variable_with_constant, delete_statement, insert_new_statement, refill
+from logger import Logger
 
 TEST_PATH = '../temp_test.py'
 
@@ -34,7 +36,9 @@ def run_evo(
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
   popul_size=100, mut_prob=[100, .1, .1, .1, .1, 100]):
-#input_data and output_data are string. How about candidates and draft_code?
+  # input_data and output_data are string. How about candidates and draft_code?
+
+  logger = Logger('test')
 
   seed_pool, used_cand_list = seeding(cand_list, popul_size)
   for i in range(max_iteration):
@@ -42,12 +46,12 @@ def run_evo(
     seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
 
     #seed_pool will be 150Gae
-    seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit)
+    seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit, logger)
 
     #left popul_size candidates. 0score candidates should be sorted randomly.
     seed_pool = seed_pool[:popul_size]
 
-    if i % 10 == 0:
+    if i % 1 == 0:
       print('%dth iteration. max_score is %.2f' %
             (i+1, seed_pool[0].get_score()))
 
@@ -75,7 +79,7 @@ def seeding(candidates, pop_size):
 
   return seed_pool, used_cand_list
 
-def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
+def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, logger):
   #by Suk
   pool_size=len(seed_pool)
   scoring_start_index=0
@@ -93,8 +97,9 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
   for i in range(test_num):
     scoring_end_index_list=[]
     for j in range(scoring_start_index,pool_size):
+
       # will be changed after Sungho complete fill_hole function.
-      # print(astor.to_source(seed_pool[j].get_node()))
+      logger.log(astor.to_source(seed_pool[j].get_node()))
       filled_code = ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)
       with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
@@ -112,7 +117,6 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
           seed_pool[0]=seed_pool[j]
           return seed_pool
       except Exception as ex:
-        # print(astor.to_source(seed_pool[j].get_node()))
         scoring_end_index_list.append(j)
         #Time out, Runtime error, etc. Sanity check fail. scoring end.
 

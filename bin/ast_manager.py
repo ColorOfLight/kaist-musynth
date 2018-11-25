@@ -83,6 +83,18 @@ def generate_candidates(code_direc):
 
     # Get func_names
     for node in ast.walk(tree):
+      # has_input = False
+      # for inner in ast.walk(node):
+      #   if isinstance(inner, ast.Name) and (inner.id == 'input' or inner.id == 'stdin'):
+      #     has_input = True
+      #     break
+      #   elif isinstance(inner, ast.Attribute) and (inner.attr == 'stdin'):
+      #     has_input = True
+      #     break
+      
+      # if has_input:
+      #   continue
+
       if isinstance(node, ast.FunctionDef):
         func_dict[node.name] = node
       elif reduce(lambda x, y: x or y,

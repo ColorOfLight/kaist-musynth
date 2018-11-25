@@ -107,7 +107,7 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, log
           seed_pool[j].set_score(seed_pool[j].get_score()+1.0)
         else:
           seed_pool[j].set_score(seed_pool[j].get_score()+0.5)
-        if seed_pool[j].get_score==test_num: #All test case pass.
+        if seed_pool[j].get_score()==test_num: #All test case pass.
           seed_pool[j].set_score(1.0)
           seed_pool[0]=seed_pool[j]
           return seed_pool

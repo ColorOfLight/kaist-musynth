@@ -96,6 +96,7 @@ def rebind_variable(cand, variable_list):
   change_num = random.randrange(0, name_num)
   new_node = changeName(input_name, change_num).visit(cand_node)
   new_cand.set_node(new_node)
+  new_cand.set_score(None)
   return new_cand
 
 
@@ -110,6 +111,7 @@ def fix_off_by_one(cand):
   change_num = random.randrange(0, node_num)
   new_node = makeNumOff(change_num).visit(cand_node)
   new_cand.set_node(new_node)
+  new_cand.set_score(None)
   return new_cand
 
 def replace_variable_with_constant(cand, max_const):
@@ -123,6 +125,7 @@ def replace_variable_with_constant(cand, max_const):
   change_num = random.randrange(0, node_num)
   new_node = changeAssignValue(ast.Num(n=max_const), change_num).visit(cand_node)
   new_cand.set_node(new_node)
+  new_cand.set_score(None)
   return new_cand
 
 # TODO: develop later
@@ -142,8 +145,8 @@ def delete_statement(cand):
 def insert_new_statement(cand, cand_list):
   return
 
-def refill(cand, cand_list):
-  return random.choice(cand_list)
+def refill(cand, cand_list, variable_list):
+  return rebind_variable(random.choice(cand_list), variable_list) 
 
 def _count_type_nodes(tree, ast_type):
   node_num = 0

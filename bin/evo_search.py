@@ -35,7 +35,7 @@ def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
-  popul_size=100, mut_prob=[100, .1, .1, .1, .1, 100]):
+  popul_size=1000, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
   # input_data and output_data are string. How about candidates and draft_code?
 
   logger = Logger('test')
@@ -95,20 +95,19 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, log
   for i in range(test_num):
     scoring_end_list=[]
     for j in None_scoring_list:
-      logger.log(astor.to_source(seed_pool[j].get_node()))
       filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
       with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
       try:
         #using python3 but with virtual env.
         result = subprocess.check_output(f'python {TEST_PATH}', input=input_data[i],
-        shell=True, timeout=runtime_limit, stderr=subprocess.STDERR, universal_newlines=True).strip()
+          shell=True, timeout=runtime_limit, stderr=subprocess.STDOUT, universal_newlines=True).strip()
         #Why strip?: result may have '\n' in end. so remove it. 
         if result == output_data[i]:
           seed_pool[j].set_score(seed_pool[j].get_score()+1.0)
         else:
           seed_pool[j].set_score(seed_pool[j].get_score()+0.5)
-        if seed_pool[j].get_score==test_num: #All test case pass.
+        if seed_pool[j].get_score()==test_num: #All test case pass.
           seed_pool[j].set_score(1.0)
           seed_pool[0]=seed_pool[j]
           return seed_pool
@@ -117,12 +116,14 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, log
         None_scoring_list.remove(j)
         #Time out, Runtime error, etc. Sanity check fail. scoring end.
 
-    for j in scoring_end_list:
-      if i > 1:
-        seed_pool[j].set_score(seed_pool[j].get_score()/i)
+    # for j in scoring_end_list:
+    #   if i > 1:
+    #     seed_pool[j].set_score(seed_pool[j].get_score()/i)
 
   for i in None_scoring_list:
     seed_pool[i].set_score(seed_pool[i].get_score()/test_num)
+    logger.log(astor.to_source(seed_pool[i].get_node()))
+    logger.log(seed_pool[i].get_score())
   
   #Scoring end. Sorting.
   i=1
@@ -193,11 +194,11 @@ def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
       elif i == 2:
         new_cand = replace_variable_with_constant(cand, hole_max_num)
       elif i == 3:
-        new_cand = delete_statement(cand)
+        new_cand = refill(cand, cand_list, hole_variable_list)
       elif i == 4:
-        new_cand = insert_new_statement(cand, cand_list)
+        new_cand = delete_statement(cand)
       elif i == 5:
-        new_cand = refill(cand, cand_list)
+        new_cand = insert_new_statement(cand, cand_list)
       else:
         new_cand = None
       

@@ -72,30 +72,26 @@ def seeding(candidates, pop_size):
 def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
   #by Suk
   pool_size=len(seed_pool)
-  scoring_start_index=0
   input_data, output_data = test_case
   test_num = len(input_data)
 
+  None_scoring_list=[]
   for i in range(pool_size):
-    if seed_pool[i].get_score()==None:#Assume that all none scoring seeds locate back.
-      scoring_start_index=i
-      break
-  for i in range(scoring_start_index,pool_size):
-    seed_pool[i].set_score(0.0)
+    if seed_pool[i].get_score()==None:
+      None_scoring_list.append(i)
+      seed_pool[i].set_score(0.0)
   #If scoring_start_index is 0, all seeds should be scroing.
 
   for i in range(test_num):
-    scoring_end_index_list=[]
-    for j in range(scoring_start_index,pool_size):
-      # will be changed after Sungho complete fill_hole function.
-      # print(astor.to_source(seed_pool[j].get_node()))
-      filled_code = ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)
+    scoring_end_list=[]
+    for j in None_scoring_list:
+      filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
       with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
       try:
         #using python3 but with virtual env.
         result = subprocess.check_output(f'python {TEST_PATH}', input=input_data[i],
-        shell=True, timeout=runtime_limit, stderr=subprocess.STDOUT, universal_newlines=True).strip()
+        shell=True, timeout=runtime_limit, stderr=subprocess.STDERR, universal_newlines=True).strip()
         #Why strip?: result may have '\n' in end. so remove it. 
         if result == output_data[i]:
           seed_pool[j].set_score(seed_pool[j].get_score()+1.0)
@@ -105,18 +101,16 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
           seed_pool[j].set_score(1.0)
           seed_pool[0]=seed_pool[j]
           return seed_pool
-      except Exception as ex:
-        # print(astor.to_source(seed_pool[j].get_node()))
-        scoring_end_index_list.append(j)
+      except Exception:
+        scoring_end_list.append(j)
+        None_scoring_list.remove(j)
         #Time out, Runtime error, etc. Sanity check fail. scoring end.
 
-    for j in scoring_end_index_list:
+    for j in scoring_end_list:
       if i > 1:
         seed_pool[j].set_score(seed_pool[j].get_score()/i)
-      seed_pool[j], seed_pool[scoring_start_index] = seed_pool[scoring_start_index], seed_pool[j]
-      scoring_start_index+=1
 
-  for i in range(scoring_start_index, pool_size):
+  for i in None_scoring_list:
     seed_pool[i].set_score(seed_pool[i].get_score()/test_num)
   
   #Scoring end. Sorting.
@@ -128,7 +122,7 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
       seed_pool[j+1]=seed_pool[j]
       j= j-1
     seed_pool[j+1]=tmp
-    i+=1
+    i=i+1
   return seed_pool
 
 def fitness(draft_code, runtime_limit, input_data, output_data):

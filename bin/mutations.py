@@ -119,6 +119,9 @@ def delete_statement(cand):
 def insert_new_statement(cand, cand_list):
   return
 
+def refill(cand, cand_list):
+  return random.choice(cand_list)
+
 def _count_type_nodes(tree, ast_type):
   node_num = 0
   for node in ast.walk(tree):

@@ -4,7 +4,7 @@ import random
 import sys
 import astor
 from mutations import \
-  rebind_variable, fix_off_by_one, replace_variable_with_constant, delete_statement, insert_new_statement
+  rebind_variable, fix_off_by_one, replace_variable_with_constant, delete_statement, insert_new_statement, refill
 
 TEST_PATH = '../temp_test.py'
 
@@ -33,13 +33,14 @@ def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
-  popul_size=100, mut_prob=[.5, .5, .5, .5, .5, .5]):
+  popul_size=100, mut_prob=[100, .1, .1, .1, .1, 100]):
 #input_data and output_data are string. How about candidates and draft_code?
 
   seed_pool, used_cand_list = seeding(cand_list, popul_size)
   for i in range(max_iteration):
     #mutate
-    #seed_pool += mutation(seed_pool,mut_porb) - Tempo code.
+    seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
+
     #seed_pool will be 150Gae
     seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit)
 
@@ -53,8 +54,6 @@ def run_evo(
     if seed_pool[0].get_score()==1.0:
       #return should be fixed later.
       return seed_pool[0]
-    
-    seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num)
 
   '''if not succeed:
     return None
@@ -181,13 +180,13 @@ mutate_cand_list
 input: list of codeCand
 output: list of codeCand (mutated cands are added)
 '''
-def mutate_cand_list(cand_list, hole_variable_list, hole_max_num):
+def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
   mutated_cand_list = []
-  index_list = list(range(5))
+  index_list = list(range(6))
   
   for cand in cand_list:
-    random.shuffle(index_list)
-    for i in index_list:
+    shuffled_indexes = _weigthed_shuffle(index_list, mut_prob)
+    for i in shuffled_indexes:
       if i == 0:
         new_cand = rebind_variable(cand, hole_variable_list)
       elif i == 1:
@@ -198,6 +197,8 @@ def mutate_cand_list(cand_list, hole_variable_list, hole_max_num):
         new_cand = delete_statement(cand)
       elif i == 4:
         new_cand = insert_new_statement(cand, cand_list)
+      elif i == 5:
+        new_cand = refill(cand, cand_list)
       else:
         new_cand = None
       
@@ -206,3 +207,8 @@ def mutate_cand_list(cand_list, hole_variable_list, hole_max_num):
         break
 
   return cand_list + mutated_cand_list
+
+def _weigthed_shuffle(items, weights):
+    order = sorted(range(len(items)), key=lambda i: -
+                   random.random() ** (1.0 / weights[i]))
+    return [items[i] for i in order]

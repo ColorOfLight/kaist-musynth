@@ -102,7 +102,7 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, log
       try:
         #using python3 but with virtual env.
         result = subprocess.check_output(f'python {TEST_PATH}', input=input_data[i],
-        shell=True, timeout=runtime_limit, stderr=subprocess.STDERR, universal_newlines=True).strip()
+          shell=True, timeout=runtime_limit, stderr=subprocess.STDOUT, universal_newlines=True).strip()
         #Why strip?: result may have '\n' in end. so remove it. 
         if result == output_data[i]:
           seed_pool[j].set_score(seed_pool[j].get_score()+1.0)

@@ -4,6 +4,7 @@ import os
 from functools import reduce
 from read import get_fn_in_direc
 from evo_search import codeCand
+from copy import deepcopy
 
 # class changeFuncNames(ast.NodeTransformer):
 #   def __init__(self, fn):
@@ -109,7 +110,7 @@ def fill_hole(cand, holed_node, func_dict):
   module_body.append(cand_node)
 
   input_node = ast.Module(body=module_body)
-  filled_node = fillHoleNode(input_node).visit(holed_node)
+  filled_node = fillHoleNode(input_node).visit(deepcopy(holed_node))
   return astor.to_source(filled_node)
 
 '''

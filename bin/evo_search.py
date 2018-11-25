@@ -3,17 +3,24 @@ import ast_manager
 import random
 import sys
 import astor
+import ast
+from mutations import \
+  rebind_variable, fix_off_by_one, replace_variable_with_constant, delete_statement, insert_new_statement, refill
+from logger import Logger
 
 TEST_PATH = '../temp_test.py'
 
 class codeCand(object):
-  def __init__(self, node, source):
+  def __init__(self, node, source=None):
     self.node = node
     self.source = source
     self.score = None
   
   def set_score(self, score):
     self.score = score
+  
+  def set_node(self, node):
+    self.node = node
 
   def get_score(self):
     return self.score
@@ -28,20 +35,23 @@ def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
   runtime_limit=0.5, max_iteration=1000,
-  popul_size=100, mut_prob=[.5, .5, .5, .5, .5, .5]):
-#input_data and output_data are string. How about candidates and draft_code?
+  popul_size=100, mut_prob=[100, .1, .1, .1, .1, 100]):
+  # input_data and output_data are string. How about candidates and draft_code?
+
+  logger = Logger('test')
 
   seed_pool, used_cand_list = seeding(cand_list, popul_size)
   for i in range(max_iteration):
     #mutate
-    #seed_pool += mutation(seed_pool,mut_porb) - Tempo code.
+    seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
+
     #seed_pool will be 150Gae
-    seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit)
+    seed_pool = lexicase_test([input_data, output_data], hole_tree, seed_pool, func_dict, runtime_limit, logger)
 
     #left popul_size candidates. 0score candidates should be sorted randomly.
     seed_pool = seed_pool[:popul_size]
 
-    if i % 10 == 0:
+    if i % 1 == 0:
       print('%dth iteration. max_score is %.2f' %
             (i+1, seed_pool[0].get_score()))
 
@@ -69,7 +79,7 @@ def seeding(candidates, pop_size):
 
   return seed_pool, used_cand_list
 
-def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
+def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit, logger):
   #by Suk
   pool_size=len(seed_pool)
   input_data, output_data = test_case
@@ -85,6 +95,7 @@ def lexicase_test(test_case, hole_tree, seed_pool, func_dict, runtime_limit):
   for i in range(test_num):
     scoring_end_list=[]
     for j in None_scoring_list:
+      logger.log(astor.to_source(seed_pool[j].get_node()))
       filled_code=ast_manager.fill_hole(seed_pool[j], hole_tree, func_dict)#will be changed after Sungho complete fill_hole function.
       with open(TEST_PATH, 'w') as f:
         f.write(filled_code)
@@ -163,3 +174,40 @@ def fitness(draft_code, runtime_limit, input_data, output_data):
     #if output is right, plus 1/n point and if output  coume out but is wrong, plus 0.5/n point
   return test_score / test_num
     
+'''
+mutate_cand_list
+input: list of codeCand
+output: list of codeCand (mutated cands are added)
+'''
+def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
+  mutated_cand_list = []
+  index_list = list(range(6))
+  
+  for cand in cand_list:
+    shuffled_indexes = _weigthed_shuffle(index_list, mut_prob)
+    for i in shuffled_indexes:
+      if i == 0:
+        new_cand = rebind_variable(cand, hole_variable_list)
+      elif i == 1:
+        new_cand = fix_off_by_one(cand)
+      elif i == 2:
+        new_cand = replace_variable_with_constant(cand, hole_max_num)
+      elif i == 3:
+        new_cand = delete_statement(cand)
+      elif i == 4:
+        new_cand = insert_new_statement(cand, cand_list)
+      elif i == 5:
+        new_cand = refill(cand, cand_list)
+      else:
+        new_cand = None
+      
+      if new_cand != None:
+        mutated_cand_list.append(new_cand)
+        break
+
+  return cand_list + mutated_cand_list
+
+def _weigthed_shuffle(items, weights):
+    order = sorted(range(len(items)), key=lambda i: -
+                   random.random() ** (1.0 / weights[i]))
+    return [items[i] for i in order]

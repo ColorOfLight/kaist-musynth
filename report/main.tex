@@ -4,8 +4,9 @@
 \title{\textsc{KaiSynth}: Program Synthesis via Code Reuse and Manipulation}
 \author{Donghoon Han, Seokhyun Nam, Seongho Park, Tae Soo Kim\\Group 7}
 
-\usepackage{natbib}
 \usepackage{graphicx}
+\usepackage{biblatex}
+\addbibresource{references.bib}
 
 \begin{document}
 
@@ -16,21 +17,21 @@ The advent of the Internet has facilitated the sharing of and the exploration of
 
 However, although the accessibility of what has been nicknamed as "Big Code" can assist developers, efficiently harnessing this vast pool of code can be a difficult task. Developers cannot simply copy and paste any code fragment found online into their own program. A suitable fragment must first be found then it has to be manually altered to fit into the program's context. Depending on the program's and fragment's complexity, this can be a time-consuming and tedious task for the developer. Despite it being tedious, this practice of code reuse is common among software developers 
 
-In this paper, we propose and describe our system \textsc{KaiSynth} that can automatically synthesize programs by "filling" holes in a given program by utilizing and manipulating code fragments from other programs. Based on the system \textsc{MuSynth} \citep{musynth}, our approach uses a genetic algorithm that takes, as input, a draft program with an explicitly demarcated gap in the code. Such a gap could be present due to the developer's inability to code a functionality owed to their lack of expertise or time. \textsc{KaiSynth} generates a functional complete program by "filling" the hole with code fragments, extracted from a pool of similar programs, that have been slightly modified throughout evolutionary cycles. 
+In this paper, we propose and describe our system \textsc{KaiSynth} that can automatically synthesize programs by "filling" holes in a given program by utilizing and manipulating code fragments from other programs. Based on the system \textsc{MuSynth} \cite{musynth}, our approach uses a genetic algorithm that takes, as input, a draft program with an explicitly demarcated gap in the code. Such a gap could be present due to the developer's inability to code a functionality owed to their lack of expertise or time. \textsc{KaiSynth} generates a functional complete program by "filling" the hole with code fragments, extracted from a pool of similar programs, that have been slightly modified throughout evolutionary cycles. 
 
-We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms by users on the website HackerRank. Results from the evaluation demonstrated that [description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
+We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms by users on the website HackerRank \cite{hackerrank}. Results from the evaluation demonstrated that [description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
 
 \section{Background}
-MuSynth \citep{musynth} and SourceForager
-Our task what we wanted to do
-Paper very limited as to their specifications about how they implemented
-Wanted to task ourselves if we could build the system from scrap using only the minimal guidelines or information provided in the paper.
-Could not handle the SourceForager part. Separate project related to SE but not to SB.
+\subsection{\textsc{MuSynth} and Source Forager}
+Our work is based on the system \textsc{MuSynth}. The authors of the paper constructed a system that, given a partial C program, could search through a large body of code to find similar programs, and then use fragments from these to complete the input partial program. They achieved this by utilizing their tool Source Forager \cite{sourceforager}, a similar-code-search engine they constructed prior \textsc{MuSynth}.
 
-ASTs
+Our task was to replicate \textsc{MuSynth} with the guidance of the minimal specifications provided in the paper. \textsc{KaiSynth} differs with the original system in that it manipulates programs implemented in the Python programming language, instead of C, and uses manually populated code pools. Replicating the tool Source Forager would have been a demanding task outside of the scope of search-based software engineering.
+
+\subsection{Abstract Syntax Trees}
+\textsc{KaiSynth} manipulates and modifies programs by transforming them into abstract syntax trees (ASTs) utilizing the Python ast module \cite{astpython}. ASTs are tree representations of program code. Each node in the tree represents a constant value, a variable name, or an operation. The children of each node are the values on which an operation will be performed.  The ast module is a standard library in Python 3 that, given program code in string form, returns an AST representation of the code.
 
 
-\section{KaiSynth Overview}
+\section{\textsc{KaiSynth} Overview}
 How we did it
 
 \section{Evaluation}
@@ -43,6 +44,6 @@ Integers
 \section{Conclusion}
 Our experience overall from this.
 
-\bibliographystyle{plain}
-\bibliography{references}
+\printbibliography
+
 \end{document}

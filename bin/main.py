@@ -30,7 +30,7 @@ for i in range(5):
     hole_tree, input_data, output_data, cand_list, func_dict,
     hole_variable_list, hole_max_num, is_random=True)
   if synth_code:
-    print(f"Random-none: {i} - {iteration} iterations")
+    print(f"Random-none: {i+1} - {iteration} iterations")
     r.append(iteration)
 
 for i in range(5):
@@ -38,7 +38,7 @@ for i in range(5):
     hole_tree, input_data, output_data, cand_list, func_dict,
     hole_variable_list, hole_max_num, is_random=False)
   if synth_code:
-    print(f"Evo-none: {i} - {iteration} iterations")
+    print(f"Evo-none: {i+1} - {iteration} iterations")
     nr.append(iteration)
 
 print(f"Random-none: {sum(r) / 5}, Evo-none: {sum(nr) / 5}")

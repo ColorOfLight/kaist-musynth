@@ -73,7 +73,12 @@ def generate_candidates(code_direc):
   cand_list = []
 
   for fn in fns:
-    name = fn.split('.')[0]
+    splited_name = fn.split('.')
+
+    if splited_name[-1] != 'py':
+      continue
+
+    name = splited_name[0]
 
     # Parse code into ast tree
     tree = astor.code_to_ast.parse_file(os.path.join(code_direc, fn))

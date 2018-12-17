@@ -8,7 +8,7 @@ def q_sort(num_list):
     list1=[]
     list2=[]
     for i in range(1,len(num_list)):
-        #Hole: sort // numbers
+        __HOLE__ = None
 
         '''if num_list[i]<=pivot:
             list1.append(num_list[i])

@@ -25,7 +25,7 @@ cand_list, func_dict = generate_candidates(os.path.join('../code-pool', test_nam
 
 # If it fails, return null
 r, nr = [], []
-for i in range(10):
+for i in range(5):
   synth_code, iteration = run_evo(
     hole_tree, input_data, output_data, cand_list, func_dict,
     hole_variable_list, hole_max_num, is_random=True)
@@ -33,7 +33,7 @@ for i in range(10):
     print(f"Random-none: {i} - {iteration} iterations")
     r.append(iteration)
 
-for i in range(10):
+for i in range(5):
   synth_code, iteration = run_evo(
     hole_tree, input_data, output_data, cand_list, func_dict,
     hole_variable_list, hole_max_num, is_random=False)
@@ -41,4 +41,4 @@ for i in range(10):
     print(f"Evo-none: {i} - {iteration} iterations")
     nr.append(iteration)
 
-print(f"Random-none: {sum(r) / 10}, Evo-none: {sum(nr) / 10}")
+print(f"Random-none: {sum(r) / 5}, Evo-none: {sum(nr) / 5}")

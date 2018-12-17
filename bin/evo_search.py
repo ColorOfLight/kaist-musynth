@@ -51,33 +51,39 @@ class codeCand(object):
 def run_evo(
   hole_tree, input_data, output_data, 
   cand_list, func_dict, hole_variable_list, hole_max_num,
-  runtime_limit=0.5, max_iteration=1000,
-  popul_size=200, mut_prob=[3, 1, 1, 3, 0.0001, 0.0001]):
+  runtime_limit=0.5, max_iteration=100,
+  popul_size=200, mut_prob=[3, 1, 1, 3], is_random=False):
   # input_data and output_data are string. How about candidates and draft_code?
 
   logger = Logger('test')
 
   seed_pool, _ = seeding(cand_list, popul_size)
   for i in range(max_iteration):
-    #mutate
-    seed_pool = mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
+    if is_random:
+      seed_pool, _ = seeding(cand_list, popul_size)
+      seed_pool = mutate_cand_list(
+          seed_pool, hole_variable_list, hole_max_num, [1, 1e-06, 1e-06, 1e-06])
+      seed_pool = seed_pool[:popul_size]
+      seed_pool = lexicase_test(
+          seed_pool, hole_tree, func_dict, input_data, output_data, runtime_limit, logger)
+    else:
+      #mutate
+      seed_pool = seed_pool + mutate_cand_list(seed_pool, hole_variable_list, hole_max_num, mut_prob)
 
-    #seed_pool will be 150Gae
-    seed_pool = lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runtime_limit, logger)
+      #seed_pool will be 150Gae
+      seed_pool = lexicase_test(seed_pool, hole_tree, func_dict, input_data, output_data, runtime_limit, logger)
 
-    #left popul_size candidates. 0score candidates should be sorted randomly.
-    seed_pool = seed_pool[:popul_size]
+      #left popul_size candidates. 0score candidates should be sorted randomly.
+      seed_pool = seed_pool[:popul_size]
 
     print('%dth iteration. max_score is %.2f' %
           (i+1, seed_pool[0].get_avg_score()))
 
     if seed_pool[0].get_avg_score()==1.0:
       #return should be fixed later.
-      return seed_pool[0]
+      return seed_pool[0], (i + 1)
 
-  '''if not succeed:
-    return None
-  return synth_code'''
+  return None, max_iteration
 
 # Hoon
 # Input : candidate - list of codeCand, pop_size - size of population
@@ -158,7 +164,7 @@ output: list of codeCand (mutated cands are added)
 '''
 def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
   mutated_cand_list = []
-  index_list = list(range(6))
+  index_list = list(range(4))
   
   for cand in cand_list:
     shuffled_indexes = _weigthed_shuffle(index_list, mut_prob)
@@ -171,10 +177,6 @@ def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
         new_cand = replace_variable_with_constant(cand, hole_max_num)
       elif i == 3:
         new_cand = refill(cand, cand_list, hole_variable_list)
-      elif i == 4:
-        new_cand = delete_statement(cand)
-      elif i == 5:
-        new_cand = insert_new_statement(cand, cand_list)
       else:
         new_cand = None
       
@@ -182,7 +184,7 @@ def mutate_cand_list(cand_list, hole_variable_list, hole_max_num, mut_prob):
         mutated_cand_list.append(new_cand)
         break
 
-  return cand_list + mutated_cand_list
+  return mutated_cand_list
 
 def _weigthed_shuffle(items, weights):
     order = sorted(range(len(items)), key=lambda i: -

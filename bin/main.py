@@ -24,10 +24,21 @@ input_data, output_data = read_dataset(os.path.join('../testcase', test_name+'-d
 cand_list, func_dict = generate_candidates(os.path.join('../code-pool'))
 
 # If it fails, return null
-synth_code = run_evo(
-  hole_tree, input_data, output_data, cand_list, func_dict,
-  hole_variable_list, hole_max_num)
+r, nr = [], []
+for i in range(5):
+  synth_code, iteration = run_evo(
+    hole_tree, input_data, output_data, cand_list, func_dict,
+    hole_variable_list, hole_max_num, is_random=True)
+  if synth_code:
+    print(f"Random-none: {i} - {iteration} iterations")
+    r.append(iteration)
 
-if synth_code:
-  # write_new_file
-  print("Success")
+for i in range(5):
+  synth_code, iteration = run_evo(
+    hole_tree, input_data, output_data, cand_list, func_dict,
+    hole_variable_list, hole_max_num, is_random=False)
+  if synth_code:
+    print(f"Evo-none: {i} - {iteration} iterations")
+    nr.append(iteration)
+
+print(f"Random-none: {sum(r) / 5}, Evo-none: {sum(nr) / 5}")

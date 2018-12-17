@@ -19,7 +19,7 @@ However, although the accessibility of what has been nicknamed as "Big Code" can
 
 In this paper, we propose and describe our system \textsc{KaiSynth} that can automatically synthesize programs by "filling" holes in a given program by utilizing and manipulating code fragments from other programs. Based on the system \textsc{MuSynth} \cite{musynth}, our approach uses a genetic algorithm that takes, as input, a draft program with an explicitly demarcated gap in the code. Such a gap could be present due to the developer's inability to code a functionality owed to their lack of expertise or time. \textsc{KaiSynth} generates a functional complete program by "filling" the hole with code fragments, extracted from a pool of similar programs, that have been slightly modified throughout evolutionary cycles. 
 
-We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms written by users on the website HackerRank \cite{hackerrank}. Results from the evaluation demonstrated that [description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
+We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms written by users on the website HackerRank \cite{hackerrank}. Results from the evaluation demonstrated that [TODO: description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
 
 
 \section{Background}
@@ -44,30 +44,23 @@ The code snippet list is a list that contains all the possible AST subtrees that
 
 To generate the initial population, \textsc{KaiSynth} transforms the input program with a hole to its AST representation. The hole will be represented by a node containing only the variable \texttt{\_\_HOLE\_\_}. 200 different AST subtrees are randomly selected from the code snippet list and are used to replace the \texttt{\_\_HOLE\_\_} node in the input program's AST. Using the rebind variable name mutation, several randomly selected variable names found within the code snippet subtrees are replaced with randomly selected variable names found in the input program's AST. This generates 200 candidate program ASTs that form the initial population for the evolutionary algorithm. Each of these individuals in the population is evaluated through the fitness function and assigned a fitness value.
 
-// TODO: verify that the initial population is assigned fitness values
-
 \subsection{Fitness Function}
-
-// TODO: talk about the function dictionary when talking about transforming to program code
 
 To evaluate the fitness of each individual in the population, the individual which is an AST is first transformed into program code. After the transformation, for any function call found in the AST subtree of the code snippet, the function name is used to extract the definition from the function dictionary and the definition is then appended to the beginning of the program code. This program code is then evaluated against the test cases provided as inputs to the system. Each test case is a pair of inputs to be provided to a synthesized program and expected outputs. Instead of evaluating each candidate program against all of the provided test cases, \textsc{KaiSynth} evaluates the candidate program through lexicase selection.
 
 In lexicase selection, at every evolutionary cycle, the test cases are given a different random ordering. The candidate program is evaluated with the first test case in the ordering. The candidate program is executed with the inputs in the test case and the output given by the execution is compared to the expected output for the test case. If the given output and the expected output are equal, a counter incremented by 1 and the program is evaluated using the next test case. If the program returns an output different to the expected output, the counter is incremented by 0.5. This continues until the program faces a runtime error or exceeds the execution time limit. At this point, the system stops evaluating the program, divides the value stored in the counter by the total number of test cases, and assigns the result as the fitness value of the candidate program. 
 
+// TODO: maybe explain why we gave 0.5 for incorrect output
+
 \subsection{The Evolutionary Cycle}
 
-In each cycle of the evolutionary algorithm, \textsc{KaiSynth} mutates each of the individuals in the population to create new individuals. The four possible types of mutations that can be applied on an individual are the refill mutation, the rebind variable name mutation, the replace variable with constant mutation, and the fix-off-by-one mutation. Further details on the operations performed by each mutation type will be provided in section 3.4. For each individual, only one mutation type is selected based on predefined probabilities and applied on the individual.
+In each cycle of the evolutionary algorithm, \textsc{KaiSynth} mutates each of the individuals in the population to create new individuals. The four possible types of mutations that can be applied on an individual are the refill mutation, the rebind variable name mutation, the replace variable with constant mutation, and the fix-off-by-one mutation. Further details on the operations performed by each mutation type will be provided in section 3.4. For each individual, only one mutation type is selected based on predefined probabilities and applied on the individual. The refill and rebind variable name mutation are applied with a probability of 0.375, and the replace variable with constant and fix-off-by-one mutation have a 0.125 probability of being applied.
 
-// TODO: verify the predefined probabilities for each mutation type and that only one is applied
-// TODO: verify how the bottom half is determined and discarded
-
-After the mutations are applied, each new individual is evaluated and assigned a fitness value. Among the individuals in the original population and the population generated through the mutations, the 200 individuals with the lowest fitness values are discarded. Only the top half, with respects to fitness values, from the combined population of original and mutated individuals survive to the next evolutionary cycle. The survivors then form the new, original population and are mutated to generate new individuals that are evaluated. This cycle of mutation, evaluation and selection continues until one of the individuals in the population passes all of the test cases correctly during its evaluation. If such an individual is synthesized, \textsc{KaiSynth} halts the evolutionary cycle and returns the code form of this individual as the final output program,
+After the mutations are applied, each new individual is evaluated and assigned a fitness value. Among the individuals in the original population and the population generated through the mutations, the 200 individuals with the lowest fitness values are discarded. Only the top half, with respects to fitness values, from the combined population of original and mutated individuals survive to the next evolutionary cycle. The survivors then form the new, original population and are mutated to generate new individuals. This cycle of mutation, evaluation and selection continues until one of the individuals in the population passes all of the test cases correctly during its evaluation. If such an individual is synthesized, \textsc{KaiSynth} halts the evolutionary cycle and returns the code form of this individual as the final output program.
 
 \subsection{The Four Mutations}
 
-\textsc{KaiSynth} applies four different types of mutations that slightly modify the AST subtrees of the code snippets used to fill the hole to allow the snippet to fit into the context of the program it is filling. The first and most crucial of these mutations is the refill mutation. The refill mutation replaces the AST subtree of the code snippet used to fill the hole with a different, random AST subtree of a code snippet brought from the code snippet list.
-
-// TODO: need to verify that only variable names not initialized in the hole are rebinded
+\textsc{KaiSynth} applies four different types of mutations that slightly modify the AST subtrees of the code snippets used to fill the hole to allow the snippet to fit into the context of the program it is filling. The first and most crucial of these mutations is the refill mutation. The refill mutation replaces the AST subtree of the code snippet used to fill the hole with a different, random AST subtree of a code snippet brought from the code snippet list. Every refill mutation is followed by a rebind variable name mutation.
 
 The second mutation applied by the system is the rebind variable name mutation. During this mutation, a random variable name found in the original input program is selected. By walking through the AST subtree of the code snippet, a random variable name used in the code snippet is also selected. All instances of this variable name in the code snippet subtree are replaced with the variable name selected from the input program. 
 
@@ -77,16 +70,44 @@ The final mutation is the fix off-by-one mutation. In this mutation, a random in
 
 
 \section{Evaluation}
-Our evaluation and comparison to random search.
+
+\textsc{KaiSynth} was evaluated on implementations of insertion sort, [TODO: what else?]. For each algorithm, a code pool was manually populated with implementations of the algorithm written by users on the website HackerRank. For each evaluation iteration, a different program from the code pool was removed. A hole was manually created in the removed program by replacing a section of the code, which represents a subtree in the program's AST, with the variable name \texttt{\_\_HOLE\_\_}. This program with a hole, the code pool of remaining programs, and manually created test cases were passed as inputs to \textsc{KaiSynth}. The system was compared to random search on whether it could successfully return a complete, functional program and the number of cycles it required to accomplish this task. Due to the fact that most of the system's execution time was spent transforming ASTs to program code and executing the candidate programs, comparing the number of cycles required provided more significant insights.
+
+Our results are the following
+
+[TODO: tables]
 
 
 \section{Limitations}
+
+Despite the promising results from the evaluation, there are several limitations to \textsc{KaiSynth} that raise questions about the system's effectiveness in real world situations. The most significant of these limitations is that, in its current version, the system relies on a manually populated code pool. As a result, the system currently requires time and effort from the developer to populate the code pool and can only tackle problems for which a code pool has been created. For the system to truly be beneficial for developers, it is necessary for the system to automatically populate a code pool based on the given input program. This would require a tool such as Source Forager.
+
+Another limitation lies on our evaluation. The evaluation demonstrated that \textsc{KaiSynth} was effective at filling holes in programs with low complexity. 
+
 Limitations of the system we built. Mostly due to python.
+
+ - Since our system uses a manually populated code pool, cannot assert for real-life usability
+ - How effective it was compared to random search
+ - More complicated problems with more holes? Not checked
+ - Because its python, don't know when variables being initialized or value changed
+   (cannot be used to guide rebind variable name)
+ - Because its python, there are no types (this cannot be used to guide variable name rebinding)
 Integers 
 
 
 \section{Conclusion}
 Our experience overall from this.
+ - MuSynth is not a good paper: their system is bad and is not that much better than random search
+ - Should have chosen a better paper lol
+ 
+\section{Git Repository}
+Link: https://github.com/ColorOfLight/kaist-musynth
+\begin{itemize}
+    \item Donghoon Han: righthan
+    \item Seokhyun Nam: obiwan96
+    \item Seongho Park: ColorOfLight
+    \item Tae Soo Kim: tsook
+\end{itemize}
 
 \printbibliography
 

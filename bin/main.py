@@ -21,7 +21,7 @@ input_data, output_data = read_dataset(os.path.join('../testcase', test_name+'-d
 
 # Read hole and get Candidates
 # hole_comment: sort /// A
-cand_list, func_dict = generate_candidates(os.path.join('../code-pool', test_name))
+cand_list, func_dict = generate_candidates(os.path.join('../code-pool'))
 
 # If it fails, return null
 synth_code = run_evo(

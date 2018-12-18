@@ -6,6 +6,8 @@
 
 \usepackage{graphicx}
 \usepackage{biblatex}
+\usepackage{hyperref} 
+
 \addbibresource{references.bib}
 
 \begin{document}
@@ -19,14 +21,14 @@ However, although the accessibility of what has been nicknamed as "Big Code" can
 
 In this paper, we propose and describe our system \textsc{KaiSynth} that can automatically synthesize programs by "filling" holes in a given program by utilizing and manipulating code fragments from other programs. Based on the system \textsc{MuSynth} \cite{musynth}, our approach uses a genetic algorithm that takes, as input, a draft program with an explicitly demarcated gap in the code. Such a gap could be present due to the developer's inability to code a functionality owed to their lack of expertise or time. \textsc{KaiSynth} generates a functional complete program by "filling" the hole with code fragments, extracted from a pool of similar programs, that have been slightly modified throughout evolutionary cycles. 
 
-We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms written by users on the website HackerRank \cite{hackerrank}. Results from the evaluation demonstrated that [TODO: description]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
+We present our evaluation of \textsc{KaiSynth} utilizing implementations of simple algorithms written by users on the website HackerRank \cite{hackerrank}. Results from the evaluation demonstrated that [TODO: change to reflect actual]. After presenting these results, we conclude the paper by examining the limitations of our work and possible future improvements that can be made to the system to allow for general usage.
 
 
 \section{Background}
 \subsection{\textsc{MuSynth} and Source Forager}
 Our work is based on the system \textsc{MuSynth}. The authors of the paper constructed a system that, given a partial C program, could search through a large body of code to find similar programs, and then use fragments from these to complete the input partial program. They achieved this by utilizing their tool Source Forager \cite{sourceforager}, a similar-code-search engine they constructed prior \textsc{MuSynth}.
 
-Our task was to replicate \textsc{MuSynth} with the guidance of the minimal specifications provided in the paper. \textsc{KaiSynth} differs with the original system in that it manipulates programs implemented in the Python programming language, instead of C, and uses manually populated code pools. Replicating the tool Source Forager would have been a demanding task outside of the scope of search-based software engineering.
+Our task was to replicate \textsc{MuSynth} with the guidance of the minimal specifications provided in the paper. \textsc{KaiSynth} differs with the original system in that it manipulates programs implemented in the Python programming language, instead of C, and uses manually populated code pools. Due to the current popularity of Python as a programming language, we believed that replicating \textsc{MuSynth} for that language could be an interesting challenge, but also lead to a system that could have widespread benefits. Replicating the tool Source Forager would have been a demanding task outside of the scope of search-based software engineering.
 
 \subsection{Abstract Syntax Trees}
 \textsc{KaiSynth} manipulates and modifies programs by transforming them into abstract syntax trees (ASTs) utilizing the Python \texttt{ast} module \cite{astpython}. ASTs are tree representations of program code. Each node in the tree represents a constant value, a variable name, or an operation. The children of each node are the values on which an operation will be performed.  The \texttt{ast} module is a standard library in Python 3 that, given program code in string form, returns an AST representation of the code.
@@ -40,7 +42,7 @@ Our task was to replicate \textsc{MuSynth} with the guidance of the minimal spec
 
 Before the system can initiate the evolutionary algorithm, it must perform preliminary processing of the programs in the code pool and the input program, the program with a hole. Initially, the AST representations of all the programs found in the code pool are obtained through the Python \texttt{ast} module. This set of ASTs are then utilized to construct two data structures which form the basis of the evolutionary algorithm: the code snippet list, and the function dictionary.
 
-The code snippet list is a list that contains all the possible AST subtrees that can be extracted from the set of ASTs. Thus, each entry in the code snippet list is an AST subtree that represents a code fragment or snippet found in one of the programs in the code pool. The function dictionary is a list that contains all the functions that are defined within the programs found in the code pool. Each entry is keyed by the name of the function. Before the code snippet list and the function dictionary are constructed, for all functions defined in each program from the code pool, all instances of the function's name are suffixed with the name of the file the program is stored in. This precautionary step is taken to prevent overlapping between function names defined in the code snippets and function names defined in the input program.
+The code snippet list is a list that contains all the possible AST subtrees that can be extracted from the set of ASTs. Thus, each entry in the code snippet list is an AST subtree that represents a code fragment or snippet found in one of the programs in the code pool. The function dictionary is a collection that contains all the functions that are defined within the programs found in the code pool. Each entry is keyed by the name of the function. Before the code snippet list and the function dictionary are constructed, for all functions defined in each program from the code pool, all instances of the function's name are suffixed with the name of the file the program is stored in. This precautionary step is taken to prevent overlapping between function names defined in the code snippets and function names defined in the input program.
 
 To generate the initial population, \textsc{KaiSynth} transforms the input program with a hole to its AST representation. The hole will be represented by a node containing only the variable \texttt{\_\_HOLE\_\_}. 200 different AST subtrees are randomly selected from the code snippet list and are used to replace the \texttt{\_\_HOLE\_\_} node in the input program's AST. Using the rebind variable name mutation, several randomly selected variable names found within the code snippet subtrees are replaced with randomly selected variable names found in the input program's AST. This generates 200 candidate program ASTs that form the initial population for the evolutionary algorithm. Each of these individuals in the population is evaluated through the fitness function and assigned a fitness value.
 
@@ -50,7 +52,7 @@ To evaluate the fitness of each individual in the population, the individual whi
 
 In lexicase selection, at every evolutionary cycle, the test cases are given a different random ordering. The candidate program is evaluated with the first test case in the ordering. The candidate program is executed with the inputs in the test case and the output given by the execution is compared to the expected output for the test case. If the given output and the expected output are equal, a counter incremented by 1 and the program is evaluated using the next test case. If the program returns an output different to the expected output, the counter is incremented by 0.5. This continues until the program faces a runtime error or exceeds the execution time limit. At this point, the system stops evaluating the program, divides the value stored in the counter by the total number of test cases, and assigns the result as the fitness value of the candidate program. 
 
-// TODO: maybe explain why we gave 0.5 for incorrect output
+In comparison to \textsc{MuSynth}, our system does not stop evaluating a candidate program if it returns an output different to the expected output. This change was made to reward any candidate program that at least produces an output and does not face a runtime error or exceed the time limit. We hoped that this would lead to semi-functional candidate programs survive to the next evolutionary cycle. 
 
 \subsection{The Evolutionary Cycle}
 
@@ -78,22 +80,17 @@ Our results are the following
 [TODO: tables]
 
 
-\section{Limitations}
+\section{Discussion}
 
-Despite the promising results from the evaluation, there are several limitations to \textsc{KaiSynth} that raise questions about the system's effectiveness in real world situations. The most significant of these limitations is that, in its current version, the system relies on a manually populated code pool. As a result, the system currently requires time and effort from the developer to populate the code pool and can only tackle problems for which a code pool has been created. For the system to truly be beneficial for developers, it is necessary for the system to automatically populate a code pool based on the given input program. This would require a tool such as Source Forager.
+Our evaluation showed that \textsc{KaiSynth} could only synthesize complete, functional programs for simple holes. With holes that were slightly more complex, our system was unable to perform the correct sequence of mutations within the predefined time limit for evolution. Our evaluation also showed that random search was also unable to perform the same tasks. Through analysis of our system and the evaluation results, we discovered that the system failed because of two main reasons.
 
-Another limitation lies on our evaluation. The evaluation demonstrated that \textsc{KaiSynth} was effective at filling holes in programs with low complexity. 
+The first of these reasons was the fitness function used. Candidate programs in the population were evaluated with lexicase selection on the test cases provided as inputs. However, this type of fitness function only provided high level guidance to the evolutionary algorithm on how close the candidate programs were to being complete. Due to the nature of the type of programs tested during the evaluation, it is likely that if a candidate program passed one test case, then it would pass all other test cases. On the other hand, we observed in our evaluation that even if a candidate program was close to being complete, the fitness function was unable to provide any value for this closeness. For example, in one case, a candidate program only needed on variable name rebinding to be complete. However, because it still failed all test cases, it was given a fitness value of 0 and was discarded by the system. 
 
-Limitations of the system we built. Mostly due to python.
+Despite the limitations of the fitness function, \textsc{MuSynth} was still able to synthesize functional programs, but, in comparison, our system failed. The second reason for our system's failure lies on the differences between the programming languages the systems operated with. \textsc{MuSynth} filled programs written in C, while we attempted to fill holes in Python programs. C is a statically-typed language in which the type of variable has to be assigned when the variable is defined and it cannot be changed. \textsc{MuSynth} relies on this fact and utilizes type-based heuristics to guide the mutations it performs. In comparison, Python is a dynamically-typed language meaning that the type of a variable does not have to be defined when the variable is initialized and the type of the variable can be dynamically changed. This meant that we were unable to utilize type-based heuristics to guide the refill and rebind variable name mutations in \textsc{KaiSynth}. This limitation to our system had a significant effect on its ability to fill the holes in the input programs with appropriate code snippets and to then perform the correct modifications to these snippets to output a functional program.
 
- - Since our system uses a manually populated code pool, cannot assert for real-life usability
- - How effective it was compared to random search
- - More complicated problems with more holes? Not checked
- - Because its python, don't know when variables being initialized or value changed
-   (cannot be used to guide rebind variable name)
- - Because its python, there are no types (this cannot be used to guide variable name rebinding)
-Integers 
+Another significant limitation that exists to our system is that, in its current version, the system relies on a manually populated code pool. As a result, the system currently requires time and effort from the developer to populate the code pool and can only tackle problems for which a code pool has been created. For the system to truly be beneficial for developers, it is necessary for the system to automatically populate a code pool based on the given input program. This would require a tool such as Source Forager.
 
+As the goal of our project was to replicate \textsc{MuSynth}, our implementation process required an in depth and careful reading of the system's respective paper. Through these readings, several points of concern or doubt regarding the validity of the system were noted. Although the authors claim that their system was effective at filling incomplete programs, their evaluation results showed that an implementation of random search that was provided hints regarding the variables to be used and changed within the hole was almost as effective or, at times, more effective than their system when provided with the same hints. In our evaluation, we provided no hints to our system as we believed that this would be a more realistic representation of how the system would be used in real-life scenarios. We believe that this difference also had a significant effect on our system's success compared to \textsc{MuSynth}. Furthermore, we noted that the authors of \textsc{MuSynth} only reported the median time from their trials in their paper. They did not report the success rate of their system or the average time required for their system to produce a functional program. The method the authors chose to report their evaluation results and the fact that their system was not significantly superior to random search raises concerns about the actual effectiveness of their system. 
 
 \section{Conclusion}
 Our experience overall from this.
@@ -101,7 +98,7 @@ Our experience overall from this.
  - Should have chosen a better paper lol
  
 \section{Git Repository}
-Link: https://github.com/ColorOfLight/kaist-musynth
+\href{https://github.com/ColorOfLight/kaist-musynth}{Link: https://github.com/ColorOfLight/kaist-musynth} \newline Members:
 \begin{itemize}
     \item Donghoon Han: righthan
     \item Seokhyun Nam: obiwan96

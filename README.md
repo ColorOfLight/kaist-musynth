@@ -1,12 +1,14 @@
-# CS454 Team \#7 - Musynth
+# CS454 Team \#7 - Kaisynth
 
-Program Synthesis via Code Resue and Code Manipulation for Python
+Program Synthesis via Code Reuse and Code Manipulation for Python
+
+## Running Environments
 
 ## Design
 
 ### Input
 - Program with a code hole defined by us
-- Hole is line of comment (ends with ```HOLE```)
+- One part of program was subtituted by HOLE (ex. __HOLE__ = None)
 - An explanation for the hole written in the comment
 ```
 >> max.py
@@ -68,6 +70,8 @@ Parameters
   - Insert a new line into B regarding surrounding context of B
 
 ## Reference
+
+- [Kashyap, Vineeth, et al. "MuSynth: Program Synthesis via Code Reuse and Code Manipulation." International Symposium on Search Based Software Engineering. Springer, Cham, 2017.](https://www.cs.unm.edu/~eschulte/data/musynth-ssbse-2017.pdf)
 
 ## Note
 [Coding Note](https://docs.google.com/document/d/1hLi2X2IPnlgibq43QuFGgWyoxq_AYgm_SaxbF97RMJI/edit?usp=sharing)
